@@ -1,9 +1,11 @@
 import express from "express"
-import loginRouter from "./routes/login.js"
 import MongoStore from "connect-mongo"
 import session from "express-session"
 import dotenv from "dotenv"
 import mongoose from "mongoose"
+import cookies from "cookie-parser"
+import socket from "socket.io"
+import loginRouter from "./routes/login.js"
 
 dotenv.config()
 
@@ -13,16 +15,21 @@ mongoose.connect(process.env.DATABASE_ACCESS).then(() => {
 })
 
 app.use(express.json())
+app.use(cookies())
 app.use(session({
     secret: "participant",
     saveUninitialized: false,
     resave: false,
+    cookie: {
+        expires: 36000
+    },
     store: MongoStore.create({
         mongoUrl: process.env.DATABASE_ACCESS,
         autoRemove: "native",
-        crypto: {
-            secret: "squirrel"
-        }
+        // 세션 암호화
+        // crypto: {
+        //     secret: "squirrel"
+        // }
     })
 }))
 app.use("/login", loginRouter)
