@@ -12,6 +12,16 @@ const usersSchema = new mongoose.Schema({
     name: {
         type: String,
         require: true
+    },
+    status: {
+        type: Number,
+        require: true,
+        default: 0,
+    },
+    login_time: {
+        type: Date,
+        require: false,
+        default: ""
     }
 })
 
