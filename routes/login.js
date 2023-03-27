@@ -1,5 +1,6 @@
 import express from "express"
 import jwt from "jsonwebtoken"
+import bcrypt from "bcrypt"
 import UsersModel from "../models/user.js"
 import sessionAuth from "../middlewares/auth.js"
 import SessionsModel from "../models/sessions.js"
@@ -19,18 +20,15 @@ router.post("/user", async (req, res) => {
     const user = await UsersModel.findOne({ id: id })
 
     if (user) return res.status(401)
-
-    try {
-        // 유저 정보 암호화 함수 추가
+    const salt = bcrypt.genSaltSync(10)
+    await bcrypt.hash(pw, salt).then((str) => {
         const newUser = new UsersModel({
             id: id,
-            pw: pw,
+            pw: str,
             name: name
         })
         newUser.save()
-    } catch (e) {
-        console.error(e)
-    }
+    })
     res.send({ status: "success", message: "create new user" })
 })
 
@@ -44,14 +42,13 @@ router.post("", async (req, res) => {
         timeDiff = now.getTime() - user.login_time.getTime()
     else
         timeDiff = 0
-    console.log(parseInt(timeDiff / (1000 * 60 * 60 * 24)))
 
     // ip 비교 추가 고려
     if (!user)
         return res.send({ status: "400", message: "유저 정보 없음" })
     else if (user.status === 1)
         return res.status(401).send({ message: "잠금된 계정입니다. 관리자에게 문의하시기 바랍니다." })
-    else if (pw !== user.pw) // 비밀번호 해쉬함수 비교 추가
+    else if (!bcrypt.compareSync(pw, user.pw)) // 비밀번호 해쉬함수 비교 추가
         return res.send({ status: "400", message: "패스워드가 틀림" })
     else if (parseInt(timeDiff / (1000 * 60 * 60 * 24)) > 90) {
         await UsersModel.findOneAndUpdate({ id: id }, { status: 1 })
