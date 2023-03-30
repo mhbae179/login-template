@@ -4,7 +4,6 @@ import bcrypt from "bcrypt"
 import UsersModel from "../models/user.js"
 import sessionAuth from "../middlewares/auth.js"
 import SessionsModel from "../models/sessions.js"
-import mongoose from "mongoose"
 
 const router = express.Router()
 
@@ -30,6 +29,14 @@ router.post("/user", async (req, res) => {
         newUser.save()
     })
     res.send({ status: "success", message: "create new user" })
+})
+
+router.delete("/user", async (req, res) => {
+    const { id } = req.body
+
+    await UsersModel.findOneAndDelete({ id: id })
+    res.end()
+    
 })
 
 router.post("", async (req, res) => {

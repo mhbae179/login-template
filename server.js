@@ -19,7 +19,7 @@ mongoose.connect(process.env.DATABASE_ACCESS).then(() => {
 app.use(express.json())
 app.use(cors({
     credentials: true,
-    origin: ["http://192.168.10.192:3000"]
+    origin: ["*"]
 }))
 app.use(cookies())
 app.use(session({
